@@ -1,15 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:seminariovalidacion/models/product.dart';
+import 'package:seminariovalidacion/screens/loading_screen.dart';
+import 'package:seminariovalidacion/services/products_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final productService = Provider.of<ProductsService>(context);
+    if (productService.isLoading) return LoadingScreen();
     return Scaffold(
       appBar: AppBar(title: Text("Productos")),
       body: ListView.builder(
-        itemCount: 10,
-        itemBuilder: (_, index) => ProductCard(),
+        itemCount: productService.products.length,
+        itemBuilder: (_, index) => ProductCard(
+          product: productService.products[index],
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
@@ -20,8 +28,8 @@ class HomeScreen extends StatelessWidget {
 }
 
 class ProductCard extends StatelessWidget {
-  const ProductCard({super.key});
-
+  final Product product;
+  const ProductCard({super.key, required this.product});
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -64,7 +72,7 @@ class _BackgroundImage extends StatelessWidget {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(25),
         child: FadeInImage(
-          placeholder: AssetImage("jar-loading.gif"),
+          placeholder: AssetImage('assets/jar-loading.gif'),
           image: NetworkImage('https://via.placeholder.com/400x300/f6f6f6'),
           fit: BoxFit.cover,
         ),
@@ -78,28 +86,31 @@ class _ProductDetails extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(right: 50),
-      height: 70,
-      width: double.infinity,
-      decoration: _buildBoxDecoration(),
-      child: Column(
-        children: [
-          Text(
-            "Disco duro G",
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
+    return Padding(
+      padding: const EdgeInsets.only(right: 50),
+      child: Container(
+        padding: EdgeInsets.only(right: 50),
+        height: 70,
+        width: double.infinity,
+        decoration: _buildBoxDecoration(),
+        child: Column(
+          children: [
+            Text(
+              "Disco duro G",
+              style: TextStyle(
+                fontSize: 20,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          Text(
-            "Id del disco duro",
-            style: TextStyle(fontSize: 15, color: Colors.white),
-          ),
-        ],
+            Text(
+              "Id del disco duro",
+              style: TextStyle(fontSize: 15, color: Colors.white),
+            ),
+          ],
+        ),
       ),
     );
   }
