@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seminariovalidacion/models/product.dart';
 import 'package:seminariovalidacion/screens/loading_screen.dart';
+import 'package:seminariovalidacion/screens/product_screen.dart';
 import 'package:seminariovalidacion/services/products_service.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -9,14 +10,22 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final productService = Provider.of<ProductsService>(context);
+    final productService = Provider.of<ProductsService>(context, listen: true);
     if (productService.isLoading) return LoadingScreen();
     return Scaffold(
       appBar: AppBar(title: Text("Productos")),
       body: ListView.builder(
         itemCount: productService.products.length,
-        itemBuilder: (_, index) => ProductCard(
-          product: productService.products[index],
+        itemBuilder: (_, index) => GestureDetector(
+          onTap: () {
+            productService.selectedProduct =
+                productService.products[index].copy();
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => ProductScreen(url: productService.selectedProduct.picture)));
+          },
+          child: ProductCard(
+            product: productService.products[index],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -42,10 +51,15 @@ class ProductCard extends StatelessWidget {
         child: Stack(
           alignment: Alignment.bottomLeft,
           children: [
-            _BackgroundImage(),
-            _ProductDetails(),
-            Positioned(top: 0, right: 0, child: _PriceTag()),
-            Positioned(top: 0, left: 0, child: _NotAvailable())
+            _BackgroundImage(url: product.picture),
+            _ProductDetails(
+              name: product.name,
+              id: product.id,
+            ),
+            Positioned(
+                top: 0, right: 0, child: _PriceTag(price: product.price)),
+            if (!product.available)
+              Positioned(top: 0, left: 0, child: _NotAvailable())
           ],
         ),
       ),
@@ -62,7 +76,8 @@ class ProductCard extends StatelessWidget {
 }
 
 class _BackgroundImage extends StatelessWidget {
-  const _BackgroundImage({super.key});
+  final String? url;
+  const _BackgroundImage({super.key, this.url});
 
   @override
   Widget build(BuildContext context) {
@@ -71,18 +86,25 @@ class _BackgroundImage extends StatelessWidget {
       height: 400,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(25),
-        child: FadeInImage(
-          placeholder: AssetImage('assets/jar-loading.gif'),
-          image: NetworkImage('https://via.placeholder.com/400x300/f6f6f6'),
-          fit: BoxFit.cover,
-        ),
+        child: url == null
+            ? Image(
+                image: AssetImage('assets/no-image.png'),
+                fit: BoxFit.cover,
+              )
+            : FadeInImage(
+                placeholder: AssetImage('assets/jar-loading.gif'),
+                image: NetworkImage(url!),
+                fit: BoxFit.cover,
+              ),
       ),
     );
   }
 }
 
 class _ProductDetails extends StatelessWidget {
-  const _ProductDetails({super.key});
+  final String name;
+  final String? id;
+  const _ProductDetails({super.key, required this.name, this.id});
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +118,7 @@ class _ProductDetails extends StatelessWidget {
         child: Column(
           children: [
             Text(
-              "Disco duro G",
+              "$name",
               style: TextStyle(
                 fontSize: 20,
                 color: Colors.white,
@@ -106,7 +128,7 @@ class _ProductDetails extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
             Text(
-              "Id del disco duro",
+              "$id",
               style: TextStyle(fontSize: 15, color: Colors.white),
             ),
           ],
@@ -125,7 +147,8 @@ class _ProductDetails extends StatelessWidget {
 }
 
 class _PriceTag extends StatelessWidget {
-  const _PriceTag({super.key});
+  final double? price;
+  const _PriceTag({super.key, this.price});
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +165,7 @@ class _PriceTag extends StatelessWidget {
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 10),
           child: Text(
-            "103,99eu",
+            "$price \$",
             style: TextStyle(color: Colors.white, fontSize: 20),
           ),
         ),

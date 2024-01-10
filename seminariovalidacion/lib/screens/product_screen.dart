@@ -1,17 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:seminariovalidacion/services/products_service.dart';
 import 'package:seminariovalidacion/widgets/widgets.dart';
 
 class ProductScreen extends StatelessWidget {
-  const ProductScreen({super.key});
+  final String? url;
+  const ProductScreen({super.key, this.url});
 
   @override
   Widget build(BuildContext context) {
+    print(url);
     return Scaffold(
       body: SingleChildScrollView(
         child: Column(children: [
           Stack(
             children: [
-              ProductImage(),
+              ProductImage(url: url),
               Positioned(
                 top: 60,
                 right: 20,
