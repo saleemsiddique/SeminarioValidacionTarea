@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
             productService.selectedProduct =
                 productService.products[index].copy();
             Navigator.push(context,
-                MaterialPageRoute(builder: (context) => ProductScreen(url: productService.selectedProduct.picture)));
+                MaterialPageRoute(builder: (context) => ProductScreen()));
           },
           child: ProductCard(
             product: productService.products[index],
