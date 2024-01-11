@@ -28,9 +28,10 @@ class Product {
       );
 
   Map<String, dynamic> toJson() => {
+        "id": id != null ? id : name,
         "available": available,
         "name": name,
-        "picture": picture,
+        "picture": picture ?? null,
         "price": price,
       };
 
@@ -39,6 +40,5 @@ class Product {
       picture: this.picture,
       name: this.name,
       price: this.price,
-      id: this.id
-      );
+      id: this.id);
 }
