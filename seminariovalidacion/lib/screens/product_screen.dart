@@ -18,7 +18,7 @@ class ProductScreen extends StatelessWidget {
   }
 }
 
-class _ProductScreenBody extends StatelessWidget {
+class _ProductScreenBody extends StatefulWidget {
   const _ProductScreenBody({
     Key? key,
     required this.productService,
@@ -26,6 +26,11 @@ class _ProductScreenBody extends StatelessWidget {
 
   final ProductsService productService;
 
+  @override
+  State<_ProductScreenBody> createState() => _ProductScreenBodyState();
+}
+
+class _ProductScreenBodyState extends State<_ProductScreenBody> {
   @override
   Widget build(BuildContext context) {
     final productForm = Provider.of<ProductFormProvider>(context);
@@ -40,7 +45,11 @@ class _ProductScreenBody extends StatelessWidget {
                 right: 20,
                 child: IconButton(
                   onPressed: () async {
-                    await _processImage();
+                    String urlImage = await _processImage();
+                    widget.productService.updateSelectedProductImage(urlImage);
+                    setState(() {
+                      
+                    });
                   },
                   icon: Icon(
                     Icons.camera_alt_outlined,
@@ -64,21 +73,21 @@ class _ProductScreenBody extends StatelessWidget {
             ],
           ),
           _ProductForm(
-            product: productService.selectedProduct,
+            product: widget.productService.selectedProduct,
           )
         ]),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           if (!productForm.isValidForm()) return;
-          final String? urlImage = await productService.uploadImage();
+          final String? urlImage = await widget.productService.uploadImage();
           if (urlImage != null) {
-            productService.selectedProduct.picture = urlImage;
+            widget.productService.selectedProduct.picture = urlImage;
           }
-          await productService.saveOrCreateProduct(productForm.product);
+          await widget.productService.saveOrCreateProduct(productForm.product);
           Navigator.pop(context);
         },
-        child: productService.isSaving
+        child: widget.productService.isSaving
             ? const CircularProgressIndicator(
                 color: Colors.white,
               )
@@ -88,14 +97,16 @@ class _ProductScreenBody extends StatelessWidget {
     );
   }
 
-  Future<void> _processImage() async {
+  Future<String> _processImage() async {
     final _picker = ImagePicker();
     final XFile? pickedFile =
         await _picker.pickImage(source: ImageSource.camera, imageQuality: 100);
     if (pickedFile == null) {
       print('No Selecciono nada');
+      return '';
     } else {
       print('Tenemos imagen ${pickedFile.path}');
+      return pickedFile.path;
     }
   }
 }
@@ -156,7 +167,7 @@ class _ProductForm extends StatelessWidget {
                   value: product.available,
                   title: Text('Disponible'),
                   activeColor: Colors.indigo,
-                  onChanged: (value) => productForm.updateAvailability,
+                  onChanged: productForm.updateAvailability,
                 ),
               ],
             )),

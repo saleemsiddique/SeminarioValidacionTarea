@@ -51,9 +51,6 @@ class ProductsService extends ChangeNotifier {
     final resp = await http.put(url, body: product.toRawJson());
     final decodedData = resp.body;
     print('decoded Data: $decodedData');
-
-    final index = products.indexWhere((element) => element.id == product.id);
-    products[index] = product;
     return product.id!;
   }
 
@@ -62,9 +59,10 @@ class ProductsService extends ChangeNotifier {
     print(product.toJson());
     final url = Uri.https(_baseUrl, 'products.json');
     final resp = await http.post(url, body: product.toRawJson());
-    final decodedData = resp.body;
-    print('decoded Data: $decodedData');
-    return '';
+    final decodedData = json.decode(resp.body);
+    product.id = decodedData['name'];
+    this.products.add(product);
+    return product.id!;
   }
 
   Future saveOrCreateProduct(Product product) async {
@@ -74,6 +72,8 @@ class ProductsService extends ChangeNotifier {
       await createProduct(product);
     } else {
       await updateProduct(product);
+      final index = products.indexWhere((element) => element.id == product.id);
+      products[index] = product;
     }
     isSaving = false;
     notifyListeners();

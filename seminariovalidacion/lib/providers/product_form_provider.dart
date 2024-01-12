@@ -16,7 +16,7 @@ class ProductFormProvider extends ChangeNotifier{
   }
 
   updateAvailability(bool result){
-    product.available = result;
+    this.product.available = result;
     notifyListeners();
   }
 }
