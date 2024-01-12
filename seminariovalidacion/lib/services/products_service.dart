@@ -79,6 +79,15 @@ class ProductsService extends ChangeNotifier {
     notifyListeners();
   }
 
+Future deleteProduct(Product product) async {
+  print("Borrando");
+  final url = Uri.https(_baseUrl, 'products/${product.id}.json'); // Use the product ID in the URL
+  final resp = await http.delete(url);
+  final decodedData = json.decode(resp.body);
+  this.products.remove(product);
+}
+
+
   Future<String?> uploadImage() async {
     if (newPictureFile == null) {
       return null;

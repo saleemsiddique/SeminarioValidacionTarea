@@ -45,14 +45,28 @@ class _ProductScreenBodyState extends State<_ProductScreenBody> {
                 right: 20,
                 child: IconButton(
                   onPressed: () async {
-                    String urlImage = await _processImage();
-                    widget.productService.updateSelectedProductImage(urlImage);
-                    setState(() {
-                      
-                    });
+                    String? urlImage = await _processImage();
+                    widget.productService.updateSelectedProductImage(urlImage!);
+                    setState(() {});
                   },
                   icon: Icon(
                     Icons.camera_alt_outlined,
+                    size: 40,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Positioned(
+                top: 60,
+                right: 80,
+                child: IconButton(
+                  onPressed: () async {
+                    String? urlImage = await _processFromGalleryImage();
+                    widget.productService.updateSelectedProductImage(urlImage!);
+                    setState(() {});
+                  },
+                  icon: Icon(
+                    Icons.image,
                     size: 40,
                     color: Colors.white,
                   ),
@@ -97,19 +111,32 @@ class _ProductScreenBodyState extends State<_ProductScreenBody> {
     );
   }
 
-  Future<String> _processImage() async {
+  Future<String?> _processImage() async {
     final _picker = ImagePicker();
     final XFile? pickedFile =
         await _picker.pickImage(source: ImageSource.camera, imageQuality: 100);
     if (pickedFile == null) {
       print('No Selecciono nada');
-      return '';
+      return null;
     } else {
       print('Tenemos imagen ${pickedFile.path}');
       return pickedFile.path;
     }
   }
 }
+
+  Future<String?> _processFromGalleryImage() async {
+    final _picker = ImagePicker();
+    final XFile? pickedFile =
+        await _picker.pickImage(source: ImageSource.gallery, imageQuality: 100);
+    if (pickedFile == null) {
+      print('No Selecciono nada');
+      return null;
+    } else {
+      print('Tenemos imagen ${pickedFile.path}');
+      return pickedFile.path;
+    }
+  }
 
 class _ProductForm extends StatelessWidget {
   final Product product;
@@ -160,6 +187,15 @@ class _ProductForm extends StatelessWidget {
                   decoration: InputDecorations.authInputDecoration(
                     hintText: '150€',
                     labelText: 'Precio:',
+                  ),
+                ),
+                SizedBox(height: 30),
+                TextFormField(
+                  initialValue: product.fecha,
+                  enabled: false,                
+                  decoration: InputDecorations.authInputDecoration(
+                    hintText: 'Fecha de registro',
+                    labelText: 'Fecha de registro:',
                   ),
                 ),
                 SizedBox(height: 30),

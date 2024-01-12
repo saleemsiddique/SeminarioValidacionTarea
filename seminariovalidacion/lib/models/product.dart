@@ -4,6 +4,7 @@ class Product {
   String? id;
   bool available;
   String name;
+  String? fecha;
   String? picture;
   double price;
 
@@ -11,6 +12,7 @@ class Product {
     this.id,
     required this.available,
     required this.name,
+    this.fecha,
     this.picture,
     required this.price,
   });
@@ -25,12 +27,14 @@ class Product {
         name: json["name"],
         picture: json["picture"],
         price: json["price"]?.toDouble(),
+        fecha: json["fecha"],
       );
 
   Map<String, dynamic> toJson() => {
         "id": id != null ? id : name,
         "available": available,
         "name": name,
+        "fecha": fecha,
         "picture": picture ?? null,
         "price": price,
       };
@@ -40,5 +44,6 @@ class Product {
       picture: this.picture,
       name: this.name,
       price: this.price,
-      id: this.id);
+      id: this.id,
+      fecha: this.fecha);
 }

@@ -31,8 +31,11 @@ class HomeScreen extends StatelessWidget {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          productService.selectedProduct =
-              new Product(available: false, name: '', price: 0);
+          productService.selectedProduct = new Product(
+              available: false,
+              name: '',
+              price: 0,
+              fecha: DateTime.now().toString());
           Navigator.pushNamed(context, 'product');
         },
       ),
@@ -45,26 +48,50 @@ class ProductCard extends StatelessWidget {
   const ProductCard({super.key, required this.product});
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20),
-      child: Container(
-        width: double.infinity,
-        height: 400,
+    final productService = Provider.of<ProductsService>(context, listen: true);
+    return Dismissible(
+      direction: DismissDirection.endToStart,
+      background: Container(),
+      secondaryBackground: Container(
         margin: EdgeInsets.only(top: 30, bottom: 50),
-        decoration: _cardBorders(),
-        child: Stack(
-          alignment: Alignment.bottomLeft,
-          children: [
-            _BackgroundImage(url: product.picture),
-            _ProductDetails(
-              name: product.name,
-              id: product.id,
+        decoration:
+            _deleteCardBorders(), // Utiliza la misma decoración que el ProductCard
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: <Widget>[
+            Padding(
+              padding: EdgeInsets.only(right: 20.0),
+              child: Icon(
+                Icons.delete,
+                color: Colors.white,
+              ),
             ),
-            Positioned(
-                top: 0, right: 0, child: _PriceTag(price: product.price)),
-            if (!product.available)
-              Positioned(top: 0, left: 0, child: _NotAvailable())
           ],
+        ),
+      ),
+      onDismissed: (direction) => productService.deleteProduct(product),
+      key: UniqueKey(),
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 20),
+        child: Container(
+          width: double.infinity,
+          height: 400,
+          margin: EdgeInsets.only(top: 30, bottom: 50),
+          decoration: _cardBorders(),
+          child: Stack(
+            alignment: Alignment.bottomLeft,
+            children: [
+              _BackgroundImage(url: product.picture),
+              _ProductDetails(
+                name: product.name,
+                id: product.id,
+              ),
+              Positioned(
+                  top: 0, right: 0, child: _PriceTag(price: product.price)),
+              if (!product.available)
+                Positioned(top: 0, left: 0, child: _NotAvailable())
+            ],
+          ),
         ),
       ),
     );
@@ -72,6 +99,14 @@ class ProductCard extends StatelessWidget {
 
   BoxDecoration _cardBorders() => BoxDecoration(
         color: Colors.indigo,
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(color: Colors.black12, offset: Offset(0, 7), blurRadius: 10)
+        ],
+      );
+
+  BoxDecoration _deleteCardBorders() => BoxDecoration(
+        color: Colors.red,
         borderRadius: BorderRadius.circular(25),
         boxShadow: [
           BoxShadow(color: Colors.black12, offset: Offset(0, 7), blurRadius: 10)
