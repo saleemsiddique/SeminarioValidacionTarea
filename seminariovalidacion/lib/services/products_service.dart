@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:seminariovalidacion/models/product.dart';
 import 'package:http/http.dart' as http;
 
@@ -12,6 +13,7 @@ class ProductsService extends ChangeNotifier {
   bool isSaving = false;
   late Product selectedProduct;
   File? newPictureFile;
+  final storage = const FlutterSecureStorage();
 
   ProductsService() {
     print("entra");
@@ -23,7 +25,9 @@ class ProductsService extends ChangeNotifier {
     this.isLoading = true;
     notifyListeners();
 
-    final url = Uri.https(_baseUrl, '/products.json');
+    final url = Uri.https(_baseUrl, '/products.json', {
+      'auth': await storage.read(key: 'token') ?? '',
+    });
     print(url);
     final resp = await http.get(url);
 
@@ -47,7 +51,9 @@ class ProductsService extends ChangeNotifier {
 
   Future<String> updateProduct(Product product) async {
     print('Editando');
-    final url = Uri.https(_baseUrl, 'products/${product.id}.json');
+    final url = Uri.https(_baseUrl, 'products/${product.id}.json', {
+      'auth': await storage.read(key: 'token') ?? '',
+    });
     final resp = await http.put(url, body: product.toRawJson());
     final decodedData = resp.body;
     print('decoded Data: $decodedData');
@@ -57,7 +63,9 @@ class ProductsService extends ChangeNotifier {
   Future<String> createProduct(Product product) async {
     print('Creando');
     print(product.toJson());
-    final url = Uri.https(_baseUrl, 'products.json');
+    final url = Uri.https(_baseUrl, 'products.json', {
+      'auth': await storage.read(key: 'token') ?? '',
+    });
     final resp = await http.post(url, body: product.toRawJson());
     final decodedData = json.decode(resp.body);
     product.id = decodedData['name'];
@@ -79,14 +87,15 @@ class ProductsService extends ChangeNotifier {
     notifyListeners();
   }
 
-Future deleteProduct(Product product) async {
-  print("Borrando");
-  final url = Uri.https(_baseUrl, 'products/${product.id}.json'); // Use the product ID in the URL
-  final resp = await http.delete(url);
-  final decodedData = json.decode(resp.body);
-  this.products.remove(product);
-}
-
+  Future deleteProduct(Product product) async {
+    print("Borrando");
+    final url = Uri.https(_baseUrl, 'products/${product.id}.json', {
+      'auth': await storage.read(key: 'token') ?? '',
+    });
+    final resp = await http.delete(url);
+    final decodedData = json.decode(resp.body);
+    this.products.remove(product);
+  }
 
   Future<String?> uploadImage() async {
     if (newPictureFile == null) {

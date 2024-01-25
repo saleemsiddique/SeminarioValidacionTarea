@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:seminariovalidacion/models/product.dart';
 import 'package:seminariovalidacion/screens/loading_screen.dart';
 import 'package:seminariovalidacion/screens/product_screen.dart';
+import 'package:seminariovalidacion/services/auth_service.dart';
 import 'package:seminariovalidacion/services/products_service.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -10,10 +11,19 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context, listen: true);
     final productService = Provider.of<ProductsService>(context, listen: true);
     if (productService.isLoading) return LoadingScreen();
     return Scaffold(
-      appBar: AppBar(title: Text("Productos")),
+      appBar: AppBar(
+          title: Text("Productos"),
+          leading: IconButton(
+            onPressed: (() {
+              authService.logout();
+              Navigator.pushReplacementNamed(context, '/');
+            }),
+            icon: const Icon(Icons.login_outlined),
+          )),
       body: ListView.builder(
         itemCount: productService.products.length,
         itemBuilder: (_, index) => GestureDetector(

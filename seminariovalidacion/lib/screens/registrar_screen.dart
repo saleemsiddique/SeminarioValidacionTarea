@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:seminariovalidacion/providers/register_form_provider.dart';
+import 'package:seminariovalidacion/services/auth_service.dart';
+import 'package:seminariovalidacion/services/notification_service.dart';
 import 'package:seminariovalidacion/ui/input_decorations.dart';
 import 'package:seminariovalidacion/widgets/widgets.dart';
 import 'package:intl/intl.dart';
@@ -27,11 +29,11 @@ class RegisterScreen extends StatelessWidget {
                       create: (_) => RegisterFormProvider(),
                       child: RegisterForm(),
                     ),
-                    SizedBox(height: 30),
-                    IniciarCuenta(),
                   ],
                 ),
-              )
+              ),
+              SizedBox(height: 30),
+              IniciarCuenta(),
             ],
           ),
         ),
@@ -137,9 +139,9 @@ class RegisterForm extends StatelessWidget {
             ),
             DropdownButton<String>(
               value: registerForm.sexo,
-              items: ['Masculino', 'Femenino', 'Otro', 'Selecciona sexo'].map((String value) {
+              items: ['Masculino', 'Femenino', 'Otro', 'Selecciona sexo']
+                  .map((String value) {
                 return DropdownMenuItem<String>(
-
                   value: value,
                   child: Text(value),
                 );
@@ -182,6 +184,7 @@ class RegisterBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final registerForm = Provider.of<RegisterFormProvider>(context);
+    final authService = Provider.of<AuthService>(context);
     return MaterialButton(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       disabledColor: Colors.grey,
@@ -202,12 +205,15 @@ class RegisterBtn extends StatelessWidget {
 
               registerForm.isLoading = true;
 
-              // Simulación de un registro exitoso con un retraso de 2 segundos
-              await Future.delayed(Duration(seconds: 2));
+              final String? errorMessage = await authService.createUser(
+                  registerForm.email, registerForm.password);
 
-              registerForm.isLoading = false;
-
-              Navigator.pushReplacementNamed(context, 'home');
+              if (errorMessage == null) {
+                Navigator.pushReplacementNamed(context, 'home');
+              } else {
+                NotificationService.showSnackbar(errorMessage);
+                registerForm.isLoading = false;
+              }
             },
     );
   }
@@ -216,21 +222,19 @@ class RegisterBtn extends StatelessWidget {
 class IniciarCuenta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      disabledColor: Colors.grey,
-      elevation: 0,
-      color: Colors.deepPurple,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-        child: Text(
-          'Iniciar Sesión',
-          style: TextStyle(color: Colors.white),
+    return TextButton(
+      onPressed: () => Navigator.pushReplacementNamed(context, '/'),
+      style: ButtonStyle(
+        overlayColor:
+            MaterialStatePropertyAll<Color>(Colors.indigo.withOpacity(0.2)),
+        shape: MaterialStatePropertyAll<OutlinedBorder>(
+          StadiumBorder(),
         ),
       ),
-      onPressed: () {
-        Navigator.pushNamed(context, '/');
-      },
+      child: const Text(
+        'Ya tienes cuenta?',
+        style: TextStyle(fontSize: 18, color: Colors.black87),
+      ),
     );
   }
 }

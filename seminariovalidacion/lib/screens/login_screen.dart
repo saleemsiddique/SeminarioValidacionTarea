@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:seminariovalidacion/providers/login_form_provider.dart';
+import 'package:seminariovalidacion/services/auth_service.dart';
+import 'package:seminariovalidacion/services/notification_service.dart';
 import 'package:seminariovalidacion/widgets/widgets.dart';
 import 'package:seminariovalidacion/ui/input_decorations.dart';
 import 'package:provider/provider.dart';
@@ -29,10 +31,10 @@ class LoginScreen extends StatelessWidget {
                     create: (_) => LoginFormProvider(),
                     child: _LoginForm(),
                   ),
-                  SizedBox(height: 30),
-                  CreateCuenta()
                 ]),
-              )
+              ),
+              SizedBox(height: 30),
+              CreateCuenta()
             ],
           ),
         ),
@@ -81,7 +83,7 @@ class _LoginForm extends StatelessWidget {
                     hintText: 'password',
                     labelText: 'Password',
                     prefixIcon: Icons.lock),
-                onChanged: (value) => loginForm.email = value,
+                onChanged: (value) => loginForm.password = value,
               ),
               SizedBox(height: 30),
               LoginBtn()
@@ -95,6 +97,7 @@ class LoginBtn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loginForm = Provider.of<LoginFormProvider>(context);
+    final authService = Provider.of<AuthService>(context);
     return MaterialButton(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         disabledColor: Colors.grey,
@@ -117,9 +120,16 @@ class LoginBtn extends StatelessWidget {
 
                 await Future.delayed(Duration(seconds: 2));
 
-                loginForm.isLoading = false;
+                final String? errorMessage = await authService.logUser(
+                    loginForm.email, loginForm.password);
 
-                Navigator.pushReplacementNamed(context, 'home');
+                if (errorMessage == null) {
+                  Navigator.pushReplacementNamed(context, 'home');
+                } else {
+                  NotificationService.showSnackbar(errorMessage);
+                  loginForm.isLoading = false;
+                }
+
               });
   }
 }
@@ -127,21 +137,19 @@ class LoginBtn extends StatelessWidget {
 class CreateCuenta extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialButton(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      disabledColor: Colors.grey,
-      elevation: 0,
-      color: Colors.deepPurple,
-      child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-        child: Text('Registrar',
-          style: TextStyle(color: Colors.white),
+    return TextButton(
+      onPressed: () => Navigator.pushReplacementNamed(context, 'registrar'),
+      style: ButtonStyle(
+        overlayColor:
+            MaterialStatePropertyAll<Color>(Colors.indigo.withOpacity(0.2)),
+        shape: MaterialStatePropertyAll<OutlinedBorder>(
+          StadiumBorder(),
         ),
       ),
-      onPressed: () {
-        Navigator.pushNamed(context, 'registrar');
-        }
+      child: const Text(
+        'Crear una nueva cuenta',
+        style: TextStyle(fontSize: 18, color: Colors.black87),
+      ),
     );
   }
 }
-

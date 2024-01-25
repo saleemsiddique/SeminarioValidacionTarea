@@ -1,10 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:seminariovalidacion/screens/checkauth_screen.dart';
 import 'package:seminariovalidacion/screens/product_screen.dart';
 import 'package:seminariovalidacion/screens/screens.dart';
+import 'package:seminariovalidacion/services/auth_service.dart';
+import 'package:seminariovalidacion/services/notification_service.dart';
 import 'package:seminariovalidacion/services/products_service.dart';
 
-void main() => runApp(AppState());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations(
+      [DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  runApp(AppState());
+}
 
 class AppState extends StatelessWidget {
   @override
@@ -12,6 +21,7 @@ class AppState extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ProductsService()),
+        ChangeNotifierProvider(create: (_) => AuthService()),
       ],
       child: MyApp(),
     );
@@ -26,13 +36,15 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Productos App',
-      initialRoute: 'home',
+      initialRoute: '/',
       routes: {
         '/': (_) => LoginScreen(),
         'home': (_) => HomeScreen(),
         'registrar': (_) => RegisterScreen(),
         'product': (_) => ProductScreen(),
+        'checking': (_) => CheckAuthScreen(),
       },
+      scaffoldMessengerKey: NotificationService.messengerKey,
       theme: ThemeData.light().copyWith(
           scaffoldBackgroundColor: Colors.grey[300],
           appBarTheme: AppBarTheme(
